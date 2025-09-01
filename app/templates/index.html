@@ -2,17 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <title>Phone Number Lookup</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Phone Number Location Finder</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/app/static/style.css">
 </head>
 <body>
   <div class="container">
-    <h1>📱 Phone Number Location Finder</h1>
-    <input type="text" id="phoneInput" placeholder="Enter phone number (e.g. +919712352429)">
-    <button onclick="getInfo()">Find Location</button>
-    <pre id="result"></pre>
+    <h1>Phone Number Lookup</h1>
+    <input type="text" id="phone" placeholder="Enter phone number e.g. +919898989898" autocomplete="off">
+    <button onclick="lookupPhone()">Lookup</button>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+      ⚠️ This tool is for <b>personal use only</b>. Do not use it for public or commercial purposes.
+      Public usage may be <b>illegal</b>.
+    </div>
+
+    <div class="result" id="result"></div>
   </div>
-  <script src="script.js"></script>
+
+  <script src="/app/static/script.js"></script>
 </body>
 </html>
