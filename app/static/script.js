@@ -4,7 +4,7 @@ async function getInfo() {
   resultBox.textContent = "Fetching details...";
 
   try {
-    const response = await fetch("/get_info", {
+    const response = await fetch("https://phone-number-location-finder.onrender.com/get_info", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ number })

@@ -1,12 +1,17 @@
 import os
 import phonenumbers
 import requests
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from phonenumbers import geocoder, carrier, timezone
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="app/static", template_folder="app/templates")
 CORS(app)
+
+# Serve frontend
+@app.route("/")
+def home():
+    return render_template("index.html")
 
 @app.route("/get_info", methods=["POST"])
 def get_info():
@@ -17,10 +22,8 @@ def get_info():
         if not number:
             return jsonify({"error": "No number provided"}), 400
 
-        # Parse number
         parsed_number = phonenumbers.parse(number, None)
 
-        # Details from phonenumbers
         country = geocoder.description_for_number(parsed_number, "en")
         region = phonenumbers.region_code_for_number(parsed_number)
         carrier_name = carrier.name_for_number(parsed_number, "en")
@@ -31,16 +34,15 @@ def get_info():
         )
         line_type = phonenumbers.number_type(parsed_number)
 
-        # Default coordinates empty
         latitude, longitude = "", ""
-
-        # Try external API for coords (ipinfo)
         try:
-            resp = requests.get(f"https://ipinfo.io/{region}?token=YOUR_TOKEN_HERE")
-            if resp.status_code == 200:
-                loc = resp.json().get("loc")
-                if loc:
-                    latitude, longitude = loc.split(",")
+            token = os.environ.get("IPINFO_TOKEN", "")  # safer: use env variable
+            if token:
+                resp = requests.get(f"https://ipinfo.io/{region}?token={token}")
+                if resp.status_code == 200:
+                    loc = resp.json().get("loc")
+                    if loc:
+                        latitude, longitude = loc.split(",")
         except Exception:
             pass
 
