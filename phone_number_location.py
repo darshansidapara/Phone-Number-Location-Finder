@@ -1,56 +1,66 @@
-from flask import Flask, request, jsonify
-import phonenumbers
-from phonenumbers import timezone, geocoder, carrier
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
+import phonenumbers
+from phonenumbers import geocoder, carrier, timezone
 import requests
 import os
 
-app = Flask(__name__)
-CORS(app)  # Allow frontend to access backend
+app = Flask(__name__, static_folder="static", static_url_path="")
+CORS(app)
 
-# Replace with your OpenCage API key (get free from https://opencagedata.com/api)
-OPENCAGE_API_KEY = "YOUR_OPENCAGE_API_KEY"
+@app.route("/")
+def serve_index():
+    return send_from_directory(app.static_folder, "index.html")
 
-@app.route("/api/phone", methods=["POST"])
-def phone_lookup():
-    data = request.get_json()
-    number = data.get("phone")
-
+@app.route("/get_info", methods=["POST"])
+def get_info():
     try:
-        phoneNumber = phonenumbers.parse(number)
+        data = request.get_json()
+        number = data.get("number")
 
-        # Location name from phonenumbers
-        location_name = geocoder.description_for_number(phoneNumber, "en")
+        if not number:
+            return jsonify({"error": "No number provided"}), 400
 
-        # Default empty coordinates
-        coordinates = {"lat": "", "lng": ""}
+        parsed_number = phonenumbers.parse(number)
 
-        # Fetch coordinates if location available
-        if location_name:
-            geo_url = f"https://api.opencagedata.com/geocode/v1/json?q={location_name}&key={OPENCAGE_API_KEY}"
-            geo_res = requests.get(geo_url).json()
-            if geo_res.get("results"):
-                coords = geo_res["results"][0]["geometry"]
-                coordinates = {"lat": coords["lat"], "lng": coords["lng"]}
+        # Basic details
+        country = geocoder.country_name_for_number(parsed_number, "en")
+        region = geocoder.description_for_number(parsed_number, "en")
+        provider = carrier.name_for_number(parsed_number, "en")
+        timezones = timezone.time_zones_for_number(parsed_number)
+        valid = phonenumbers.is_valid_number(parsed_number)
+        line_type = phonenumbers.number_type(parsed_number)
+        formatted_number = phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
 
-        response = {
-            "country": geocoder.country_name_for_number(phoneNumber, "en"),
-            "region": phonenumbers.region_code_for_number(phoneNumber),
-            "carrier": carrier.name_for_number(phoneNumber, "en"),
-            "line_type": str(phonenumbers.number_type(phoneNumber)),
-            "timezone": str(timezone.time_zones_for_number(phoneNumber)),
-            "formatted_number": phonenumbers.format_number(phoneNumber, phonenumbers.PhoneNumberFormat.INTERNATIONAL),
-            "country_code": str(phoneNumber.country_code),
-            "validity": "Valid" if phonenumbers.is_valid_number(phoneNumber) else "Not Valid",
-            "coordinates": coordinates
+        # Get coordinates (via external API)
+        try:
+            resp = requests.get(f"https://nominatim.openstreetmap.org/search?q={region}&format=json").json()
+            coordinates = {
+                "lat": resp[0]["lat"],
+                "lon": resp[0]["lon"]
+            } if resp else {}
+        except Exception:
+            coordinates = {}
+
+        result = {
+            "Country": country,
+            "Region/Area": region,
+            "City/Location": region,
+            "Carrier": provider,
+            "Line Type": str(line_type),
+            "Timezone": timezones,
+            "Formatted Number": formatted_number,
+            "Country Code": parsed_number.country_code,
+            "Validity": "Valid" if valid else "Invalid",
+            "Coordinates": coordinates
         }
 
-        return jsonify(response)
+        return jsonify(result)
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
