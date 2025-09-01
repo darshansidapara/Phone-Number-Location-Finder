@@ -155,7 +155,7 @@
             resultDiv.innerHTML = "<p>Fetching details...</p>";
 
             try {
-                const response = await fetch("http://127.0.0.1:5000/api/phone", {
+                const response = await fetch("https://phone-number-location-finder.onrender.com/api/phone", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ phone }),
