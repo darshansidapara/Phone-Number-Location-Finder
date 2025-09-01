@@ -1,7 +1,25 @@
 services:
   - type: web
-    name: phone-number-location-finder
+    name: phone-number-finder
     env: python
     plan: free
     buildCommand: "pip install -r requirements.txt"
     startCommand: "gunicorn phone_number_location:app"
+```
+
+#### **Step 5: Frontend Files**
+
+Ensure your frontend files are placed in the correct directories as shown in the structure in Step 1. **No changes are needed to your `script.js` file.** The relative URL `/get_info` will work perfectly because Flask is serving both the HTML page and the API from the same domain.
+
+---
+
+### ## Summary of Your Next Steps
+
+1.  **Clean Your Repository**: On your computer, delete the old files and arrange your project into the exact folder structure shown above.
+2.  **Use the New Code**: Replace the contents of your files (`phone_number_location.py`, `requirements.txt`, `render.yaml`) with the code provided here.
+3.  **Commit and Push**: Upload these changes to your GitHub repository.
+    ```bash
+    git add .
+    git commit -m "Fix project structure and paths for Render deployment"
+    git push
+    

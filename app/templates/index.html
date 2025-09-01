@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <title>Phone Number Lookup</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="/app/static/style.css">
+  
+  <!-- Correct way to link CSS in Flask -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <div class="container">
@@ -14,13 +16,13 @@
 
     <!-- Disclaimer -->
     <div class="disclaimer">
-      ⚠️ This tool is for <b>personal use only</b>. Do not use it for public or commercial purposes.
-      Public usage may be <b>illegal</b>.
+      ⚠️ This tool is for <b>personal use only</b>. Do not use it for public or commercial purposes. Public usage may be <b>illegal</b>.
     </div>
 
     <div class="result" id="result"></div>
   </div>
 
-  <script src="/app/static/script.js"></script>
+  <!-- Correct way to link JS in Flask -->
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
